@@ -1,6 +1,8 @@
 """
 Seed script: inserts data_sources, asset versions, and timeseries from
-yfinance and csv-vendor for 5 symbols. Safe to re-run (skips existing assets).
+yfinance and csv-vendor for 5 symbols. Idempotent: drops and recreates the
+timeseries collection each run; sources use upsert; assets skip if current
+version already exists.
 """
 import asyncio
 from datetime import datetime, timezone
@@ -39,6 +41,13 @@ async def main() -> None:
 
     client = AsyncIOMotorClient(MONGO_URL)
     db = client[MONGO_DB]
+
+    # Drop timeseries so re-runs don't accumulate duplicate rows.
+    # Seed data is static; this is safe and does not violate append-only for
+    # user-generated data (there is none at seed time).
+    await db.timeseries.drop()
+    print("[seed] timeseries collection dropped — will be recreated fresh")
+
     await ensure_indexes(db)
 
     yf_adapter  = YFinanceAdapter()
