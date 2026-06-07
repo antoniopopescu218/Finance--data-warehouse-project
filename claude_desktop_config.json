@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "financial-markets-dwh": {
+      "command": "/home/anto218/.local/bin/uv",
+      "args": [
+        "run",
+        "--project",
+        "/home/anto218/Desktop/24project",
+        "python",
+        "/home/anto218/Desktop/24project/mcp_server.py"
+      ]
+    }
+  }
+}
