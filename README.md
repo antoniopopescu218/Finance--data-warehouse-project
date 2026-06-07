@@ -182,6 +182,72 @@ uv run pytest tests/test_temporal.py -v
 
 ---
 
+## LangFlow Integration
+
+A pre-built LangFlow flow is included at [`flows/acme_financial.json`](flows/acme_financial.json). It lets you query the warehouse API visually, without writing code.
+
+### Canvas layout
+
+The flow has three independent sub-flows on a single canvas:
+
+| Sub-flow | Endpoint called | What it returns |
+|---|---|---|
+| **1. List All Assets** | `GET /assets` | All current non-deleted assets |
+| **2. Get Timeseries** | `GET /assets/{id}/timeseries` | OHLCV rows for a date range |
+| **3. Get Analytics Summary** | `GET /assets/{id}/analytics/summary` | count, min, max, avg of close |
+
+### Prerequisites
+
+Start the warehouse API first (it must be reachable on `http://localhost:8000`):
+
+```bash
+docker compose up -d
+uv run uvicorn api.main:app --reload
+```
+
+### Install LangFlow (once)
+
+```bash
+pip install langflow
+```
+
+Or with Docker:
+
+```bash
+docker run -p 7860:7860 langflowai/langflow:latest
+```
+
+### Import the flow
+
+1. Open LangFlow at `http://localhost:7860`.
+2. Click **My Flows → Import** (or drag-and-drop).
+3. Select `flows/acme_financial.json`.
+4. The canvas loads with all three sub-flows pre-wired.
+
+### Run a sub-flow
+
+**Sub-flow 1 — List all assets** (no inputs required):
+- Click **Run** on the `1. List All Assets` node.
+- The response appears in the `Assets Output` chat panel.
+
+**Sub-flow 2 — Get timeseries** (edit the four Text Input nodes):
+| Field | Default | Notes |
+|---|---|---|
+| Asset ID | `AAPL` | Any of: AAPL, MSFT, TSLA, ^GSPC, GLD |
+| Source ID | `yfinance` | `yfinance` or `csv-vendor` |
+| From Date | `2024-01-01` | ISO 8601 date |
+| To Date | `2024-12-31` | ISO 8601 date |
+
+Click **Run** → timeseries JSON appears in `Timeseries Output`.
+
+**Sub-flow 3 — Analytics summary**: same four inputs, same pattern → returns `{count, min, max, avg}` of close prices over the window.
+
+### Customising the URL
+
+Each Prompt node contains the full URL template. To call a different endpoint (e.g. `/analytics/trend` or `/analytics/risk`), open the Prompt node, edit the template string in place, and re-run.
+
+---
+
 ## Security Notice
 
 This project is a development/demo build and is **not hardened for production use**. Notable gaps include: no API authentication, no MongoDB access control, no rate limiting, and no TLS between services. See [`security_readme.md`](security_readme.md) for a full audit with a production hardening checklist.

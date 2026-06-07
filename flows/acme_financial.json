@@ -1,0 +1,2125 @@
+{
+  "id": "acme-financial-v1",
+  "name": "ACME Financial Markets \u2014 API Query Flow",
+  "description": "Query the Financial Markets Data Warehouse REST API without writing code. Three independent sub-flows: (1) list all assets, (2) fetch timeseries for an asset and date range, (3) get analytics summary. API must be running on http://localhost:8000.",
+  "endpoint_name": null,
+  "is_component": false,
+  "data": {
+    "nodes": [
+      {
+        "id": "APIRequest-list",
+        "type": "genericNode",
+        "position": {
+          "x": 100,
+          "y": 100
+        },
+        "data": {
+          "type": "APIRequest",
+          "node": {
+            "template": {
+              "urls": {
+                "field_type": "str",
+                "required": false,
+                "placeholder": "https://...",
+                "list": true,
+                "show": true,
+                "multiline": false,
+                "value": [
+                  "http://localhost:8000/assets"
+                ],
+                "name": "urls",
+                "display_name": "URLs",
+                "advanced": false,
+                "info": "URL to call. Receives rendered URL from Prompt when connected.",
+                "input_types": [
+                  "Message"
+                ],
+                "type": "str"
+              },
+              "curl": {
+                "field_type": "str",
+                "required": false,
+                "placeholder": "curl -X GET ...",
+                "list": false,
+                "show": true,
+                "multiline": true,
+                "value": "",
+                "name": "curl",
+                "display_name": "cURL",
+                "advanced": true,
+                "info": "",
+                "type": "str"
+              },
+              "method": {
+                "field_type": "str",
+                "required": true,
+                "placeholder": "",
+                "list": false,
+                "show": true,
+                "options": [
+                  "GET",
+                  "POST",
+                  "PATCH",
+                  "PUT",
+                  "DELETE"
+                ],
+                "value": "GET",
+                "name": "method",
+                "display_name": "Method",
+                "advanced": false,
+                "info": "",
+                "type": "str"
+              },
+              "headers": {
+                "field_type": "dict",
+                "required": false,
+                "placeholder": "",
+                "list": false,
+                "show": true,
+                "value": {
+                  "Accept": "application/json"
+                },
+                "name": "headers",
+                "display_name": "Headers",
+                "advanced": true,
+                "info": "",
+                "type": "dict"
+              },
+              "body": {
+                "field_type": "dict",
+                "required": false,
+                "placeholder": "",
+                "list": false,
+                "show": true,
+                "value": {},
+                "name": "body",
+                "display_name": "Body",
+                "advanced": true,
+                "info": "",
+                "type": "dict"
+              },
+              "timeout": {
+                "field_type": "int",
+                "required": false,
+                "placeholder": "",
+                "list": false,
+                "show": true,
+                "value": 10,
+                "name": "timeout",
+                "display_name": "Timeout (s)",
+                "advanced": false,
+                "info": "",
+                "type": "int"
+              }
+            },
+            "description": "Call GET /assets \u2014 returns all current non-deleted assets.",
+            "base_classes": [
+              "Data"
+            ],
+            "display_name": "1. List All Assets",
+            "documentation": "",
+            "custom_fields": {},
+            "output_types": [],
+            "field_order": [
+              "urls",
+              "method",
+              "headers",
+              "body",
+              "timeout"
+            ],
+            "beta": false,
+            "edited": false
+          },
+          "id": "APIRequest-list"
+        },
+        "width": 384,
+        "height": 390,
+        "selected": false,
+        "positionAbsolute": {
+          "x": 100,
+          "y": 100
+        },
+        "dragging": false
+      },
+      {
+        "id": "ParseData-list",
+        "type": "genericNode",
+        "position": {
+          "x": 580,
+          "y": 100
+        },
+        "data": {
+          "type": "ParseData",
+          "node": {
+            "template": {
+              "data": {
+                "field_type": "Data",
+                "required": true,
+                "placeholder": "",
+                "list": false,
+                "show": true,
+                "multiline": false,
+                "value": "",
+                "name": "data",
+                "display_name": "Data",
+                "advanced": false,
+                "info": "",
+                "input_types": [
+                  "Data"
+                ],
+                "type": "Data"
+              },
+              "template": {
+                "field_type": "str",
+                "required": false,
+                "placeholder": "",
+                "list": false,
+                "show": true,
+                "multiline": true,
+                "value": "{text}",
+                "name": "template",
+                "display_name": "Template",
+                "advanced": false,
+                "info": "Use {text} to render the full JSON response body.",
+                "type": "str"
+              },
+              "sep": {
+                "field_type": "str",
+                "required": false,
+                "placeholder": "",
+                "list": false,
+                "show": true,
+                "multiline": false,
+                "value": "\n",
+                "name": "sep",
+                "display_name": "Separator",
+                "advanced": true,
+                "info": "",
+                "type": "str"
+              }
+            },
+            "description": "Convert API response Data to displayable text.",
+            "base_classes": [
+              "Message"
+            ],
+            "display_name": "Parse Response",
+            "documentation": "",
+            "custom_fields": {},
+            "output_types": [],
+            "field_order": [
+              "data",
+              "template",
+              "sep"
+            ],
+            "beta": false,
+            "edited": false
+          },
+          "id": "ParseData-list"
+        },
+        "width": 384,
+        "height": 310,
+        "selected": false,
+        "positionAbsolute": {
+          "x": 580,
+          "y": 100
+        },
+        "dragging": false
+      },
+      {
+        "id": "ChatOutput-list",
+        "type": "genericNode",
+        "position": {
+          "x": 1060,
+          "y": 100
+        },
+        "data": {
+          "type": "ChatOutput",
+          "node": {
+            "template": {
+              "input_value": {
+                "field_type": "str",
+                "required": true,
+                "placeholder": "",
+                "list": false,
+                "show": true,
+                "multiline": true,
+                "value": "",
+                "name": "input_value",
+                "display_name": "Text",
+                "advanced": false,
+                "info": "",
+                "input_types": [
+                  "Message"
+                ],
+                "type": "str"
+              },
+              "should_store_message": {
+                "field_type": "bool",
+                "required": false,
+                "placeholder": "",
+                "list": false,
+                "show": true,
+                "value": true,
+                "name": "should_store_message",
+                "display_name": "Store Messages",
+                "advanced": true,
+                "info": "",
+                "type": "bool"
+              },
+              "sender": {
+                "field_type": "str",
+                "required": false,
+                "placeholder": "",
+                "list": false,
+                "show": true,
+                "options": [
+                  "Machine",
+                  "User"
+                ],
+                "value": "Machine",
+                "name": "sender",
+                "display_name": "Sender Type",
+                "advanced": true,
+                "info": "",
+                "type": "str"
+              },
+              "sender_name": {
+                "field_type": "str",
+                "required": false,
+                "placeholder": "",
+                "list": false,
+                "show": true,
+                "value": "DWH API",
+                "name": "sender_name",
+                "display_name": "Sender Name",
+                "advanced": true,
+                "info": "",
+                "type": "str"
+              },
+              "session_id": {
+                "field_type": "str",
+                "required": false,
+                "placeholder": "",
+                "list": false,
+                "show": false,
+                "value": "",
+                "name": "session_id",
+                "display_name": "Session ID",
+                "advanced": true,
+                "info": "",
+                "type": "str"
+              }
+            },
+            "description": "Display Assets Output in the Playground.",
+            "base_classes": [
+              "Message"
+            ],
+            "display_name": "Assets Output",
+            "documentation": "",
+            "custom_fields": {},
+            "output_types": [],
+            "field_order": [
+              "input_value",
+              "should_store_message",
+              "sender",
+              "sender_name"
+            ],
+            "beta": false,
+            "edited": false
+          },
+          "id": "ChatOutput-list"
+        },
+        "width": 384,
+        "height": 250,
+        "selected": false,
+        "positionAbsolute": {
+          "x": 1060,
+          "y": 100
+        },
+        "dragging": false
+      },
+      {
+        "id": "TextInput-ts-asset",
+        "type": "genericNode",
+        "position": {
+          "x": 100,
+          "y": 620
+        },
+        "data": {
+          "type": "TextInput",
+          "node": {
+            "template": {
+              "input_value": {
+                "field_type": "str",
+                "required": false,
+                "placeholder": "",
+                "list": false,
+                "show": true,
+                "multiline": false,
+                "value": "AAPL",
+                "name": "input_value",
+                "display_name": "Asset ID",
+                "advanced": false,
+                "info": "Symbol: AAPL, MSFT, TSLA, ^GSPC, or GLD",
+                "type": "str"
+              }
+            },
+            "description": "Asset ID",
+            "base_classes": [
+              "Message"
+            ],
+            "display_name": "Asset ID",
+            "documentation": "",
+            "custom_fields": {},
+            "output_types": [],
+            "field_order": [
+              "input_value"
+            ],
+            "beta": false,
+            "edited": false
+          },
+          "id": "TextInput-ts-asset"
+        },
+        "width": 384,
+        "height": 230,
+        "selected": false,
+        "positionAbsolute": {
+          "x": 100,
+          "y": 620
+        },
+        "dragging": false
+      },
+      {
+        "id": "TextInput-ts-source",
+        "type": "genericNode",
+        "position": {
+          "x": 100,
+          "y": 880
+        },
+        "data": {
+          "type": "TextInput",
+          "node": {
+            "template": {
+              "input_value": {
+                "field_type": "str",
+                "required": false,
+                "placeholder": "",
+                "list": false,
+                "show": true,
+                "multiline": false,
+                "value": "yfinance",
+                "name": "input_value",
+                "display_name": "Source ID",
+                "advanced": false,
+                "info": "Data vendor: yfinance or csv-vendor",
+                "type": "str"
+              }
+            },
+            "description": "Source ID",
+            "base_classes": [
+              "Message"
+            ],
+            "display_name": "Source ID",
+            "documentation": "",
+            "custom_fields": {},
+            "output_types": [],
+            "field_order": [
+              "input_value"
+            ],
+            "beta": false,
+            "edited": false
+          },
+          "id": "TextInput-ts-source"
+        },
+        "width": 384,
+        "height": 230,
+        "selected": false,
+        "positionAbsolute": {
+          "x": 100,
+          "y": 880
+        },
+        "dragging": false
+      },
+      {
+        "id": "TextInput-ts-from",
+        "type": "genericNode",
+        "position": {
+          "x": 100,
+          "y": 1140
+        },
+        "data": {
+          "type": "TextInput",
+          "node": {
+            "template": {
+              "input_value": {
+                "field_type": "str",
+                "required": false,
+                "placeholder": "",
+                "list": false,
+                "show": true,
+                "multiline": false,
+                "value": "2024-01-01",
+                "name": "input_value",
+                "display_name": "From Date",
+                "advanced": false,
+                "info": "Start date inclusive, ISO 8601",
+                "type": "str"
+              }
+            },
+            "description": "From Date",
+            "base_classes": [
+              "Message"
+            ],
+            "display_name": "From Date",
+            "documentation": "",
+            "custom_fields": {},
+            "output_types": [],
+            "field_order": [
+              "input_value"
+            ],
+            "beta": false,
+            "edited": false
+          },
+          "id": "TextInput-ts-from"
+        },
+        "width": 384,
+        "height": 230,
+        "selected": false,
+        "positionAbsolute": {
+          "x": 100,
+          "y": 1140
+        },
+        "dragging": false
+      },
+      {
+        "id": "TextInput-ts-to",
+        "type": "genericNode",
+        "position": {
+          "x": 100,
+          "y": 1400
+        },
+        "data": {
+          "type": "TextInput",
+          "node": {
+            "template": {
+              "input_value": {
+                "field_type": "str",
+                "required": false,
+                "placeholder": "",
+                "list": false,
+                "show": true,
+                "multiline": false,
+                "value": "2024-12-31",
+                "name": "input_value",
+                "display_name": "To Date",
+                "advanced": false,
+                "info": "End date inclusive, ISO 8601",
+                "type": "str"
+              }
+            },
+            "description": "To Date",
+            "base_classes": [
+              "Message"
+            ],
+            "display_name": "To Date",
+            "documentation": "",
+            "custom_fields": {},
+            "output_types": [],
+            "field_order": [
+              "input_value"
+            ],
+            "beta": false,
+            "edited": false
+          },
+          "id": "TextInput-ts-to"
+        },
+        "width": 384,
+        "height": 230,
+        "selected": false,
+        "positionAbsolute": {
+          "x": 100,
+          "y": 1400
+        },
+        "dragging": false
+      },
+      {
+        "id": "Prompt-ts",
+        "type": "genericNode",
+        "position": {
+          "x": 600,
+          "y": 900
+        },
+        "data": {
+          "type": "Prompt",
+          "node": {
+            "template": {
+              "template": {
+                "field_type": "prompt",
+                "required": false,
+                "placeholder": "",
+                "list": false,
+                "show": true,
+                "multiline": true,
+                "value": "http://localhost:8000/assets/{asset_id}/timeseries?source_id={source_id}&from={from_date}&to={to_date}&limit=500",
+                "name": "template",
+                "display_name": "Template",
+                "advanced": false,
+                "info": "URL template. Variables are filled from connected Text Inputs.",
+                "type": "prompt"
+              },
+              "asset_id": {
+                "field_type": "str",
+                "required": false,
+                "placeholder": "",
+                "list": false,
+                "show": true,
+                "multiline": false,
+                "value": "",
+                "name": "asset_id",
+                "display_name": "asset_id",
+                "advanced": false,
+                "info": "Connected from asset_id Text Input.",
+                "input_types": [
+                  "Message",
+                  "Text"
+                ],
+                "type": "str"
+              },
+              "source_id": {
+                "field_type": "str",
+                "required": false,
+                "placeholder": "",
+                "list": false,
+                "show": true,
+                "multiline": false,
+                "value": "",
+                "name": "source_id",
+                "display_name": "source_id",
+                "advanced": false,
+                "info": "Connected from source_id Text Input.",
+                "input_types": [
+                  "Message",
+                  "Text"
+                ],
+                "type": "str"
+              },
+              "from_date": {
+                "field_type": "str",
+                "required": false,
+                "placeholder": "",
+                "list": false,
+                "show": true,
+                "multiline": false,
+                "value": "",
+                "name": "from_date",
+                "display_name": "from_date",
+                "advanced": false,
+                "info": "Connected from from_date Text Input.",
+                "input_types": [
+                  "Message",
+                  "Text"
+                ],
+                "type": "str"
+              },
+              "to_date": {
+                "field_type": "str",
+                "required": false,
+                "placeholder": "",
+                "list": false,
+                "show": true,
+                "multiline": false,
+                "value": "",
+                "name": "to_date",
+                "display_name": "to_date",
+                "advanced": false,
+                "info": "Connected from to_date Text Input.",
+                "input_types": [
+                  "Message",
+                  "Text"
+                ],
+                "type": "str"
+              }
+            },
+            "description": "Renders the timeseries request URL from the four Text Input fields.",
+            "base_classes": [
+              "Message"
+            ],
+            "display_name": "Build Timeseries URL",
+            "documentation": "",
+            "custom_fields": {},
+            "output_types": [],
+            "field_order": [
+              "template",
+              "asset_id",
+              "source_id",
+              "from_date",
+              "to_date"
+            ],
+            "beta": false,
+            "edited": false
+          },
+          "id": "Prompt-ts"
+        },
+        "width": 384,
+        "height": 720,
+        "selected": false,
+        "positionAbsolute": {
+          "x": 600,
+          "y": 900
+        },
+        "dragging": false
+      },
+      {
+        "id": "APIRequest-ts",
+        "type": "genericNode",
+        "position": {
+          "x": 1100,
+          "y": 900
+        },
+        "data": {
+          "type": "APIRequest",
+          "node": {
+            "template": {
+              "urls": {
+                "field_type": "str",
+                "required": false,
+                "placeholder": "https://...",
+                "list": true,
+                "show": true,
+                "multiline": false,
+                "value": [],
+                "name": "urls",
+                "display_name": "URLs",
+                "advanced": false,
+                "info": "URL to call. Receives rendered URL from Prompt when connected.",
+                "input_types": [
+                  "Message"
+                ],
+                "type": "str"
+              },
+              "curl": {
+                "field_type": "str",
+                "required": false,
+                "placeholder": "curl -X GET ...",
+                "list": false,
+                "show": true,
+                "multiline": true,
+                "value": "",
+                "name": "curl",
+                "display_name": "cURL",
+                "advanced": true,
+                "info": "",
+                "type": "str"
+              },
+              "method": {
+                "field_type": "str",
+                "required": true,
+                "placeholder": "",
+                "list": false,
+                "show": true,
+                "options": [
+                  "GET",
+                  "POST",
+                  "PATCH",
+                  "PUT",
+                  "DELETE"
+                ],
+                "value": "GET",
+                "name": "method",
+                "display_name": "Method",
+                "advanced": false,
+                "info": "",
+                "type": "str"
+              },
+              "headers": {
+                "field_type": "dict",
+                "required": false,
+                "placeholder": "",
+                "list": false,
+                "show": true,
+                "value": {
+                  "Accept": "application/json"
+                },
+                "name": "headers",
+                "display_name": "Headers",
+                "advanced": true,
+                "info": "",
+                "type": "dict"
+              },
+              "body": {
+                "field_type": "dict",
+                "required": false,
+                "placeholder": "",
+                "list": false,
+                "show": true,
+                "value": {},
+                "name": "body",
+                "display_name": "Body",
+                "advanced": true,
+                "info": "",
+                "type": "dict"
+              },
+              "timeout": {
+                "field_type": "int",
+                "required": false,
+                "placeholder": "",
+                "list": false,
+                "show": true,
+                "value": 10,
+                "name": "timeout",
+                "display_name": "Timeout (s)",
+                "advanced": false,
+                "info": "",
+                "type": "int"
+              }
+            },
+            "description": "Call GET /assets/{id}/timeseries with the URL built by the Prompt.",
+            "base_classes": [
+              "Data"
+            ],
+            "display_name": "2. Get Timeseries",
+            "documentation": "",
+            "custom_fields": {},
+            "output_types": [],
+            "field_order": [
+              "urls",
+              "method",
+              "headers",
+              "body",
+              "timeout"
+            ],
+            "beta": false,
+            "edited": false
+          },
+          "id": "APIRequest-ts"
+        },
+        "width": 384,
+        "height": 390,
+        "selected": false,
+        "positionAbsolute": {
+          "x": 1100,
+          "y": 900
+        },
+        "dragging": false
+      },
+      {
+        "id": "ParseData-ts",
+        "type": "genericNode",
+        "position": {
+          "x": 1580,
+          "y": 900
+        },
+        "data": {
+          "type": "ParseData",
+          "node": {
+            "template": {
+              "data": {
+                "field_type": "Data",
+                "required": true,
+                "placeholder": "",
+                "list": false,
+                "show": true,
+                "multiline": false,
+                "value": "",
+                "name": "data",
+                "display_name": "Data",
+                "advanced": false,
+                "info": "",
+                "input_types": [
+                  "Data"
+                ],
+                "type": "Data"
+              },
+              "template": {
+                "field_type": "str",
+                "required": false,
+                "placeholder": "",
+                "list": false,
+                "show": true,
+                "multiline": true,
+                "value": "{text}",
+                "name": "template",
+                "display_name": "Template",
+                "advanced": false,
+                "info": "Use {text} to render the full JSON response body.",
+                "type": "str"
+              },
+              "sep": {
+                "field_type": "str",
+                "required": false,
+                "placeholder": "",
+                "list": false,
+                "show": true,
+                "multiline": false,
+                "value": "\n",
+                "name": "sep",
+                "display_name": "Separator",
+                "advanced": true,
+                "info": "",
+                "type": "str"
+              }
+            },
+            "description": "Convert API response Data to displayable text.",
+            "base_classes": [
+              "Message"
+            ],
+            "display_name": "Parse Response",
+            "documentation": "",
+            "custom_fields": {},
+            "output_types": [],
+            "field_order": [
+              "data",
+              "template",
+              "sep"
+            ],
+            "beta": false,
+            "edited": false
+          },
+          "id": "ParseData-ts"
+        },
+        "width": 384,
+        "height": 310,
+        "selected": false,
+        "positionAbsolute": {
+          "x": 1580,
+          "y": 900
+        },
+        "dragging": false
+      },
+      {
+        "id": "ChatOutput-ts",
+        "type": "genericNode",
+        "position": {
+          "x": 2060,
+          "y": 900
+        },
+        "data": {
+          "type": "ChatOutput",
+          "node": {
+            "template": {
+              "input_value": {
+                "field_type": "str",
+                "required": true,
+                "placeholder": "",
+                "list": false,
+                "show": true,
+                "multiline": true,
+                "value": "",
+                "name": "input_value",
+                "display_name": "Text",
+                "advanced": false,
+                "info": "",
+                "input_types": [
+                  "Message"
+                ],
+                "type": "str"
+              },
+              "should_store_message": {
+                "field_type": "bool",
+                "required": false,
+                "placeholder": "",
+                "list": false,
+                "show": true,
+                "value": true,
+                "name": "should_store_message",
+                "display_name": "Store Messages",
+                "advanced": true,
+                "info": "",
+                "type": "bool"
+              },
+              "sender": {
+                "field_type": "str",
+                "required": false,
+                "placeholder": "",
+                "list": false,
+                "show": true,
+                "options": [
+                  "Machine",
+                  "User"
+                ],
+                "value": "Machine",
+                "name": "sender",
+                "display_name": "Sender Type",
+                "advanced": true,
+                "info": "",
+                "type": "str"
+              },
+              "sender_name": {
+                "field_type": "str",
+                "required": false,
+                "placeholder": "",
+                "list": false,
+                "show": true,
+                "value": "DWH API",
+                "name": "sender_name",
+                "display_name": "Sender Name",
+                "advanced": true,
+                "info": "",
+                "type": "str"
+              },
+              "session_id": {
+                "field_type": "str",
+                "required": false,
+                "placeholder": "",
+                "list": false,
+                "show": false,
+                "value": "",
+                "name": "session_id",
+                "display_name": "Session ID",
+                "advanced": true,
+                "info": "",
+                "type": "str"
+              }
+            },
+            "description": "Display Timeseries Output in the Playground.",
+            "base_classes": [
+              "Message"
+            ],
+            "display_name": "Timeseries Output",
+            "documentation": "",
+            "custom_fields": {},
+            "output_types": [],
+            "field_order": [
+              "input_value",
+              "should_store_message",
+              "sender",
+              "sender_name"
+            ],
+            "beta": false,
+            "edited": false
+          },
+          "id": "ChatOutput-ts"
+        },
+        "width": 384,
+        "height": 250,
+        "selected": false,
+        "positionAbsolute": {
+          "x": 2060,
+          "y": 900
+        },
+        "dragging": false
+      },
+      {
+        "id": "TextInput-sum-asset",
+        "type": "genericNode",
+        "position": {
+          "x": 100,
+          "y": 1820
+        },
+        "data": {
+          "type": "TextInput",
+          "node": {
+            "template": {
+              "input_value": {
+                "field_type": "str",
+                "required": false,
+                "placeholder": "",
+                "list": false,
+                "show": true,
+                "multiline": false,
+                "value": "AAPL",
+                "name": "input_value",
+                "display_name": "Asset ID",
+                "advanced": false,
+                "info": "Symbol: AAPL, MSFT, TSLA, ^GSPC, or GLD",
+                "type": "str"
+              }
+            },
+            "description": "Asset ID",
+            "base_classes": [
+              "Message"
+            ],
+            "display_name": "Asset ID",
+            "documentation": "",
+            "custom_fields": {},
+            "output_types": [],
+            "field_order": [
+              "input_value"
+            ],
+            "beta": false,
+            "edited": false
+          },
+          "id": "TextInput-sum-asset"
+        },
+        "width": 384,
+        "height": 230,
+        "selected": false,
+        "positionAbsolute": {
+          "x": 100,
+          "y": 1820
+        },
+        "dragging": false
+      },
+      {
+        "id": "TextInput-sum-source",
+        "type": "genericNode",
+        "position": {
+          "x": 100,
+          "y": 2080
+        },
+        "data": {
+          "type": "TextInput",
+          "node": {
+            "template": {
+              "input_value": {
+                "field_type": "str",
+                "required": false,
+                "placeholder": "",
+                "list": false,
+                "show": true,
+                "multiline": false,
+                "value": "yfinance",
+                "name": "input_value",
+                "display_name": "Source ID",
+                "advanced": false,
+                "info": "Data vendor: yfinance or csv-vendor",
+                "type": "str"
+              }
+            },
+            "description": "Source ID",
+            "base_classes": [
+              "Message"
+            ],
+            "display_name": "Source ID",
+            "documentation": "",
+            "custom_fields": {},
+            "output_types": [],
+            "field_order": [
+              "input_value"
+            ],
+            "beta": false,
+            "edited": false
+          },
+          "id": "TextInput-sum-source"
+        },
+        "width": 384,
+        "height": 230,
+        "selected": false,
+        "positionAbsolute": {
+          "x": 100,
+          "y": 2080
+        },
+        "dragging": false
+      },
+      {
+        "id": "TextInput-sum-from",
+        "type": "genericNode",
+        "position": {
+          "x": 100,
+          "y": 2340
+        },
+        "data": {
+          "type": "TextInput",
+          "node": {
+            "template": {
+              "input_value": {
+                "field_type": "str",
+                "required": false,
+                "placeholder": "",
+                "list": false,
+                "show": true,
+                "multiline": false,
+                "value": "2024-01-01",
+                "name": "input_value",
+                "display_name": "From Date",
+                "advanced": false,
+                "info": "Start date inclusive, ISO 8601",
+                "type": "str"
+              }
+            },
+            "description": "From Date",
+            "base_classes": [
+              "Message"
+            ],
+            "display_name": "From Date",
+            "documentation": "",
+            "custom_fields": {},
+            "output_types": [],
+            "field_order": [
+              "input_value"
+            ],
+            "beta": false,
+            "edited": false
+          },
+          "id": "TextInput-sum-from"
+        },
+        "width": 384,
+        "height": 230,
+        "selected": false,
+        "positionAbsolute": {
+          "x": 100,
+          "y": 2340
+        },
+        "dragging": false
+      },
+      {
+        "id": "TextInput-sum-to",
+        "type": "genericNode",
+        "position": {
+          "x": 100,
+          "y": 2600
+        },
+        "data": {
+          "type": "TextInput",
+          "node": {
+            "template": {
+              "input_value": {
+                "field_type": "str",
+                "required": false,
+                "placeholder": "",
+                "list": false,
+                "show": true,
+                "multiline": false,
+                "value": "2024-12-31",
+                "name": "input_value",
+                "display_name": "To Date",
+                "advanced": false,
+                "info": "End date inclusive, ISO 8601",
+                "type": "str"
+              }
+            },
+            "description": "To Date",
+            "base_classes": [
+              "Message"
+            ],
+            "display_name": "To Date",
+            "documentation": "",
+            "custom_fields": {},
+            "output_types": [],
+            "field_order": [
+              "input_value"
+            ],
+            "beta": false,
+            "edited": false
+          },
+          "id": "TextInput-sum-to"
+        },
+        "width": 384,
+        "height": 230,
+        "selected": false,
+        "positionAbsolute": {
+          "x": 100,
+          "y": 2600
+        },
+        "dragging": false
+      },
+      {
+        "id": "Prompt-sum",
+        "type": "genericNode",
+        "position": {
+          "x": 600,
+          "y": 2100
+        },
+        "data": {
+          "type": "Prompt",
+          "node": {
+            "template": {
+              "template": {
+                "field_type": "prompt",
+                "required": false,
+                "placeholder": "",
+                "list": false,
+                "show": true,
+                "multiline": true,
+                "value": "http://localhost:8000/assets/{asset_id}/analytics/summary?source_id={source_id}&from={from_date}&to={to_date}",
+                "name": "template",
+                "display_name": "Template",
+                "advanced": false,
+                "info": "URL template. Variables are filled from connected Text Inputs.",
+                "type": "prompt"
+              },
+              "asset_id": {
+                "field_type": "str",
+                "required": false,
+                "placeholder": "",
+                "list": false,
+                "show": true,
+                "multiline": false,
+                "value": "",
+                "name": "asset_id",
+                "display_name": "asset_id",
+                "advanced": false,
+                "info": "Connected from asset_id Text Input.",
+                "input_types": [
+                  "Message",
+                  "Text"
+                ],
+                "type": "str"
+              },
+              "source_id": {
+                "field_type": "str",
+                "required": false,
+                "placeholder": "",
+                "list": false,
+                "show": true,
+                "multiline": false,
+                "value": "",
+                "name": "source_id",
+                "display_name": "source_id",
+                "advanced": false,
+                "info": "Connected from source_id Text Input.",
+                "input_types": [
+                  "Message",
+                  "Text"
+                ],
+                "type": "str"
+              },
+              "from_date": {
+                "field_type": "str",
+                "required": false,
+                "placeholder": "",
+                "list": false,
+                "show": true,
+                "multiline": false,
+                "value": "",
+                "name": "from_date",
+                "display_name": "from_date",
+                "advanced": false,
+                "info": "Connected from from_date Text Input.",
+                "input_types": [
+                  "Message",
+                  "Text"
+                ],
+                "type": "str"
+              },
+              "to_date": {
+                "field_type": "str",
+                "required": false,
+                "placeholder": "",
+                "list": false,
+                "show": true,
+                "multiline": false,
+                "value": "",
+                "name": "to_date",
+                "display_name": "to_date",
+                "advanced": false,
+                "info": "Connected from to_date Text Input.",
+                "input_types": [
+                  "Message",
+                  "Text"
+                ],
+                "type": "str"
+              }
+            },
+            "description": "Renders the analytics/summary request URL from the four Text Input fields.",
+            "base_classes": [
+              "Message"
+            ],
+            "display_name": "Build Summary URL",
+            "documentation": "",
+            "custom_fields": {},
+            "output_types": [],
+            "field_order": [
+              "template",
+              "asset_id",
+              "source_id",
+              "from_date",
+              "to_date"
+            ],
+            "beta": false,
+            "edited": false
+          },
+          "id": "Prompt-sum"
+        },
+        "width": 384,
+        "height": 720,
+        "selected": false,
+        "positionAbsolute": {
+          "x": 600,
+          "y": 2100
+        },
+        "dragging": false
+      },
+      {
+        "id": "APIRequest-sum",
+        "type": "genericNode",
+        "position": {
+          "x": 1100,
+          "y": 2100
+        },
+        "data": {
+          "type": "APIRequest",
+          "node": {
+            "template": {
+              "urls": {
+                "field_type": "str",
+                "required": false,
+                "placeholder": "https://...",
+                "list": true,
+                "show": true,
+                "multiline": false,
+                "value": [],
+                "name": "urls",
+                "display_name": "URLs",
+                "advanced": false,
+                "info": "URL to call. Receives rendered URL from Prompt when connected.",
+                "input_types": [
+                  "Message"
+                ],
+                "type": "str"
+              },
+              "curl": {
+                "field_type": "str",
+                "required": false,
+                "placeholder": "curl -X GET ...",
+                "list": false,
+                "show": true,
+                "multiline": true,
+                "value": "",
+                "name": "curl",
+                "display_name": "cURL",
+                "advanced": true,
+                "info": "",
+                "type": "str"
+              },
+              "method": {
+                "field_type": "str",
+                "required": true,
+                "placeholder": "",
+                "list": false,
+                "show": true,
+                "options": [
+                  "GET",
+                  "POST",
+                  "PATCH",
+                  "PUT",
+                  "DELETE"
+                ],
+                "value": "GET",
+                "name": "method",
+                "display_name": "Method",
+                "advanced": false,
+                "info": "",
+                "type": "str"
+              },
+              "headers": {
+                "field_type": "dict",
+                "required": false,
+                "placeholder": "",
+                "list": false,
+                "show": true,
+                "value": {
+                  "Accept": "application/json"
+                },
+                "name": "headers",
+                "display_name": "Headers",
+                "advanced": true,
+                "info": "",
+                "type": "dict"
+              },
+              "body": {
+                "field_type": "dict",
+                "required": false,
+                "placeholder": "",
+                "list": false,
+                "show": true,
+                "value": {},
+                "name": "body",
+                "display_name": "Body",
+                "advanced": true,
+                "info": "",
+                "type": "dict"
+              },
+              "timeout": {
+                "field_type": "int",
+                "required": false,
+                "placeholder": "",
+                "list": false,
+                "show": true,
+                "value": 10,
+                "name": "timeout",
+                "display_name": "Timeout (s)",
+                "advanced": false,
+                "info": "",
+                "type": "int"
+              }
+            },
+            "description": "Call GET /assets/{id}/analytics/summary \u2014 returns count, min, max, avg of close over the window.",
+            "base_classes": [
+              "Data"
+            ],
+            "display_name": "3. Get Analytics Summary",
+            "documentation": "",
+            "custom_fields": {},
+            "output_types": [],
+            "field_order": [
+              "urls",
+              "method",
+              "headers",
+              "body",
+              "timeout"
+            ],
+            "beta": false,
+            "edited": false
+          },
+          "id": "APIRequest-sum"
+        },
+        "width": 384,
+        "height": 390,
+        "selected": false,
+        "positionAbsolute": {
+          "x": 1100,
+          "y": 2100
+        },
+        "dragging": false
+      },
+      {
+        "id": "ParseData-sum",
+        "type": "genericNode",
+        "position": {
+          "x": 1580,
+          "y": 2100
+        },
+        "data": {
+          "type": "ParseData",
+          "node": {
+            "template": {
+              "data": {
+                "field_type": "Data",
+                "required": true,
+                "placeholder": "",
+                "list": false,
+                "show": true,
+                "multiline": false,
+                "value": "",
+                "name": "data",
+                "display_name": "Data",
+                "advanced": false,
+                "info": "",
+                "input_types": [
+                  "Data"
+                ],
+                "type": "Data"
+              },
+              "template": {
+                "field_type": "str",
+                "required": false,
+                "placeholder": "",
+                "list": false,
+                "show": true,
+                "multiline": true,
+                "value": "{text}",
+                "name": "template",
+                "display_name": "Template",
+                "advanced": false,
+                "info": "Use {text} to render the full JSON response body.",
+                "type": "str"
+              },
+              "sep": {
+                "field_type": "str",
+                "required": false,
+                "placeholder": "",
+                "list": false,
+                "show": true,
+                "multiline": false,
+                "value": "\n",
+                "name": "sep",
+                "display_name": "Separator",
+                "advanced": true,
+                "info": "",
+                "type": "str"
+              }
+            },
+            "description": "Convert API response Data to displayable text.",
+            "base_classes": [
+              "Message"
+            ],
+            "display_name": "Parse Response",
+            "documentation": "",
+            "custom_fields": {},
+            "output_types": [],
+            "field_order": [
+              "data",
+              "template",
+              "sep"
+            ],
+            "beta": false,
+            "edited": false
+          },
+          "id": "ParseData-sum"
+        },
+        "width": 384,
+        "height": 310,
+        "selected": false,
+        "positionAbsolute": {
+          "x": 1580,
+          "y": 2100
+        },
+        "dragging": false
+      },
+      {
+        "id": "ChatOutput-sum",
+        "type": "genericNode",
+        "position": {
+          "x": 2060,
+          "y": 2100
+        },
+        "data": {
+          "type": "ChatOutput",
+          "node": {
+            "template": {
+              "input_value": {
+                "field_type": "str",
+                "required": true,
+                "placeholder": "",
+                "list": false,
+                "show": true,
+                "multiline": true,
+                "value": "",
+                "name": "input_value",
+                "display_name": "Text",
+                "advanced": false,
+                "info": "",
+                "input_types": [
+                  "Message"
+                ],
+                "type": "str"
+              },
+              "should_store_message": {
+                "field_type": "bool",
+                "required": false,
+                "placeholder": "",
+                "list": false,
+                "show": true,
+                "value": true,
+                "name": "should_store_message",
+                "display_name": "Store Messages",
+                "advanced": true,
+                "info": "",
+                "type": "bool"
+              },
+              "sender": {
+                "field_type": "str",
+                "required": false,
+                "placeholder": "",
+                "list": false,
+                "show": true,
+                "options": [
+                  "Machine",
+                  "User"
+                ],
+                "value": "Machine",
+                "name": "sender",
+                "display_name": "Sender Type",
+                "advanced": true,
+                "info": "",
+                "type": "str"
+              },
+              "sender_name": {
+                "field_type": "str",
+                "required": false,
+                "placeholder": "",
+                "list": false,
+                "show": true,
+                "value": "DWH API",
+                "name": "sender_name",
+                "display_name": "Sender Name",
+                "advanced": true,
+                "info": "",
+                "type": "str"
+              },
+              "session_id": {
+                "field_type": "str",
+                "required": false,
+                "placeholder": "",
+                "list": false,
+                "show": false,
+                "value": "",
+                "name": "session_id",
+                "display_name": "Session ID",
+                "advanced": true,
+                "info": "",
+                "type": "str"
+              }
+            },
+            "description": "Display Summary Output in the Playground.",
+            "base_classes": [
+              "Message"
+            ],
+            "display_name": "Summary Output",
+            "documentation": "",
+            "custom_fields": {},
+            "output_types": [],
+            "field_order": [
+              "input_value",
+              "should_store_message",
+              "sender",
+              "sender_name"
+            ],
+            "beta": false,
+            "edited": false
+          },
+          "id": "ChatOutput-sum"
+        },
+        "width": 384,
+        "height": 250,
+        "selected": false,
+        "positionAbsolute": {
+          "x": 2060,
+          "y": 2100
+        },
+        "dragging": false
+      }
+    ],
+    "edges": [
+      {
+        "source": "APIRequest-list",
+        "sourceHandle": "{\"dataType\": \"APIRequest\", \"id\": \"APIRequest-list\", \"name\": \"data\", \"output_types\": [\"Data\"]}",
+        "target": "ParseData-list",
+        "targetHandle": "{\"fieldName\": \"data\", \"id\": \"ParseData-list\", \"inputTypes\": [\"Data\"], \"type\": \"Data\"}",
+        "data": {
+          "sourceHandle": {
+            "dataType": "APIRequest",
+            "id": "APIRequest-list",
+            "name": "data",
+            "output_types": [
+              "Data"
+            ]
+          },
+          "targetHandle": {
+            "fieldName": "data",
+            "id": "ParseData-list",
+            "inputTypes": [
+              "Data"
+            ],
+            "type": "Data"
+          }
+        },
+        "id": "edge-APIRequest-list-data-ParseData-list-data",
+        "animated": false,
+        "className": ""
+      },
+      {
+        "source": "ParseData-list",
+        "sourceHandle": "{\"dataType\": \"ParseData\", \"id\": \"ParseData-list\", \"name\": \"text\", \"output_types\": [\"Message\"]}",
+        "target": "ChatOutput-list",
+        "targetHandle": "{\"fieldName\": \"input_value\", \"id\": \"ChatOutput-list\", \"inputTypes\": [\"Message\"], \"type\": \"str\"}",
+        "data": {
+          "sourceHandle": {
+            "dataType": "ParseData",
+            "id": "ParseData-list",
+            "name": "text",
+            "output_types": [
+              "Message"
+            ]
+          },
+          "targetHandle": {
+            "fieldName": "input_value",
+            "id": "ChatOutput-list",
+            "inputTypes": [
+              "Message"
+            ],
+            "type": "str"
+          }
+        },
+        "id": "edge-ParseData-list-text-ChatOutput-list-input_value",
+        "animated": false,
+        "className": ""
+      },
+      {
+        "source": "TextInput-ts-asset",
+        "sourceHandle": "{\"dataType\": \"TextInput\", \"id\": \"TextInput-ts-asset\", \"name\": \"text\", \"output_types\": [\"Message\"]}",
+        "target": "Prompt-ts",
+        "targetHandle": "{\"fieldName\": \"asset_id\", \"id\": \"Prompt-ts\", \"inputTypes\": [\"Message\", \"Text\"], \"type\": \"str\"}",
+        "data": {
+          "sourceHandle": {
+            "dataType": "TextInput",
+            "id": "TextInput-ts-asset",
+            "name": "text",
+            "output_types": [
+              "Message"
+            ]
+          },
+          "targetHandle": {
+            "fieldName": "asset_id",
+            "id": "Prompt-ts",
+            "inputTypes": [
+              "Message",
+              "Text"
+            ],
+            "type": "str"
+          }
+        },
+        "id": "edge-TextInput-ts-asset-text-Prompt-ts-asset_id",
+        "animated": false,
+        "className": ""
+      },
+      {
+        "source": "TextInput-ts-source",
+        "sourceHandle": "{\"dataType\": \"TextInput\", \"id\": \"TextInput-ts-source\", \"name\": \"text\", \"output_types\": [\"Message\"]}",
+        "target": "Prompt-ts",
+        "targetHandle": "{\"fieldName\": \"source_id\", \"id\": \"Prompt-ts\", \"inputTypes\": [\"Message\", \"Text\"], \"type\": \"str\"}",
+        "data": {
+          "sourceHandle": {
+            "dataType": "TextInput",
+            "id": "TextInput-ts-source",
+            "name": "text",
+            "output_types": [
+              "Message"
+            ]
+          },
+          "targetHandle": {
+            "fieldName": "source_id",
+            "id": "Prompt-ts",
+            "inputTypes": [
+              "Message",
+              "Text"
+            ],
+            "type": "str"
+          }
+        },
+        "id": "edge-TextInput-ts-source-text-Prompt-ts-source_id",
+        "animated": false,
+        "className": ""
+      },
+      {
+        "source": "TextInput-ts-from",
+        "sourceHandle": "{\"dataType\": \"TextInput\", \"id\": \"TextInput-ts-from\", \"name\": \"text\", \"output_types\": [\"Message\"]}",
+        "target": "Prompt-ts",
+        "targetHandle": "{\"fieldName\": \"from_date\", \"id\": \"Prompt-ts\", \"inputTypes\": [\"Message\", \"Text\"], \"type\": \"str\"}",
+        "data": {
+          "sourceHandle": {
+            "dataType": "TextInput",
+            "id": "TextInput-ts-from",
+            "name": "text",
+            "output_types": [
+              "Message"
+            ]
+          },
+          "targetHandle": {
+            "fieldName": "from_date",
+            "id": "Prompt-ts",
+            "inputTypes": [
+              "Message",
+              "Text"
+            ],
+            "type": "str"
+          }
+        },
+        "id": "edge-TextInput-ts-from-text-Prompt-ts-from_date",
+        "animated": false,
+        "className": ""
+      },
+      {
+        "source": "TextInput-ts-to",
+        "sourceHandle": "{\"dataType\": \"TextInput\", \"id\": \"TextInput-ts-to\", \"name\": \"text\", \"output_types\": [\"Message\"]}",
+        "target": "Prompt-ts",
+        "targetHandle": "{\"fieldName\": \"to_date\", \"id\": \"Prompt-ts\", \"inputTypes\": [\"Message\", \"Text\"], \"type\": \"str\"}",
+        "data": {
+          "sourceHandle": {
+            "dataType": "TextInput",
+            "id": "TextInput-ts-to",
+            "name": "text",
+            "output_types": [
+              "Message"
+            ]
+          },
+          "targetHandle": {
+            "fieldName": "to_date",
+            "id": "Prompt-ts",
+            "inputTypes": [
+              "Message",
+              "Text"
+            ],
+            "type": "str"
+          }
+        },
+        "id": "edge-TextInput-ts-to-text-Prompt-ts-to_date",
+        "animated": false,
+        "className": ""
+      },
+      {
+        "source": "Prompt-ts",
+        "sourceHandle": "{\"dataType\": \"Prompt\", \"id\": \"Prompt-ts\", \"name\": \"text\", \"output_types\": [\"Message\"]}",
+        "target": "APIRequest-ts",
+        "targetHandle": "{\"fieldName\": \"urls\", \"id\": \"APIRequest-ts\", \"inputTypes\": [\"Message\"], \"type\": \"str\"}",
+        "data": {
+          "sourceHandle": {
+            "dataType": "Prompt",
+            "id": "Prompt-ts",
+            "name": "text",
+            "output_types": [
+              "Message"
+            ]
+          },
+          "targetHandle": {
+            "fieldName": "urls",
+            "id": "APIRequest-ts",
+            "inputTypes": [
+              "Message"
+            ],
+            "type": "str"
+          }
+        },
+        "id": "edge-Prompt-ts-text-APIRequest-ts-urls",
+        "animated": false,
+        "className": ""
+      },
+      {
+        "source": "APIRequest-ts",
+        "sourceHandle": "{\"dataType\": \"APIRequest\", \"id\": \"APIRequest-ts\", \"name\": \"data\", \"output_types\": [\"Data\"]}",
+        "target": "ParseData-ts",
+        "targetHandle": "{\"fieldName\": \"data\", \"id\": \"ParseData-ts\", \"inputTypes\": [\"Data\"], \"type\": \"Data\"}",
+        "data": {
+          "sourceHandle": {
+            "dataType": "APIRequest",
+            "id": "APIRequest-ts",
+            "name": "data",
+            "output_types": [
+              "Data"
+            ]
+          },
+          "targetHandle": {
+            "fieldName": "data",
+            "id": "ParseData-ts",
+            "inputTypes": [
+              "Data"
+            ],
+            "type": "Data"
+          }
+        },
+        "id": "edge-APIRequest-ts-data-ParseData-ts-data",
+        "animated": false,
+        "className": ""
+      },
+      {
+        "source": "ParseData-ts",
+        "sourceHandle": "{\"dataType\": \"ParseData\", \"id\": \"ParseData-ts\", \"name\": \"text\", \"output_types\": [\"Message\"]}",
+        "target": "ChatOutput-ts",
+        "targetHandle": "{\"fieldName\": \"input_value\", \"id\": \"ChatOutput-ts\", \"inputTypes\": [\"Message\"], \"type\": \"str\"}",
+        "data": {
+          "sourceHandle": {
+            "dataType": "ParseData",
+            "id": "ParseData-ts",
+            "name": "text",
+            "output_types": [
+              "Message"
+            ]
+          },
+          "targetHandle": {
+            "fieldName": "input_value",
+            "id": "ChatOutput-ts",
+            "inputTypes": [
+              "Message"
+            ],
+            "type": "str"
+          }
+        },
+        "id": "edge-ParseData-ts-text-ChatOutput-ts-input_value",
+        "animated": false,
+        "className": ""
+      },
+      {
+        "source": "TextInput-sum-asset",
+        "sourceHandle": "{\"dataType\": \"TextInput\", \"id\": \"TextInput-sum-asset\", \"name\": \"text\", \"output_types\": [\"Message\"]}",
+        "target": "Prompt-sum",
+        "targetHandle": "{\"fieldName\": \"asset_id\", \"id\": \"Prompt-sum\", \"inputTypes\": [\"Message\", \"Text\"], \"type\": \"str\"}",
+        "data": {
+          "sourceHandle": {
+            "dataType": "TextInput",
+            "id": "TextInput-sum-asset",
+            "name": "text",
+            "output_types": [
+              "Message"
+            ]
+          },
+          "targetHandle": {
+            "fieldName": "asset_id",
+            "id": "Prompt-sum",
+            "inputTypes": [
+              "Message",
+              "Text"
+            ],
+            "type": "str"
+          }
+        },
+        "id": "edge-TextInput-sum-asset-text-Prompt-sum-asset_id",
+        "animated": false,
+        "className": ""
+      },
+      {
+        "source": "TextInput-sum-source",
+        "sourceHandle": "{\"dataType\": \"TextInput\", \"id\": \"TextInput-sum-source\", \"name\": \"text\", \"output_types\": [\"Message\"]}",
+        "target": "Prompt-sum",
+        "targetHandle": "{\"fieldName\": \"source_id\", \"id\": \"Prompt-sum\", \"inputTypes\": [\"Message\", \"Text\"], \"type\": \"str\"}",
+        "data": {
+          "sourceHandle": {
+            "dataType": "TextInput",
+            "id": "TextInput-sum-source",
+            "name": "text",
+            "output_types": [
+              "Message"
+            ]
+          },
+          "targetHandle": {
+            "fieldName": "source_id",
+            "id": "Prompt-sum",
+            "inputTypes": [
+              "Message",
+              "Text"
+            ],
+            "type": "str"
+          }
+        },
+        "id": "edge-TextInput-sum-source-text-Prompt-sum-source_id",
+        "animated": false,
+        "className": ""
+      },
+      {
+        "source": "TextInput-sum-from",
+        "sourceHandle": "{\"dataType\": \"TextInput\", \"id\": \"TextInput-sum-from\", \"name\": \"text\", \"output_types\": [\"Message\"]}",
+        "target": "Prompt-sum",
+        "targetHandle": "{\"fieldName\": \"from_date\", \"id\": \"Prompt-sum\", \"inputTypes\": [\"Message\", \"Text\"], \"type\": \"str\"}",
+        "data": {
+          "sourceHandle": {
+            "dataType": "TextInput",
+            "id": "TextInput-sum-from",
+            "name": "text",
+            "output_types": [
+              "Message"
+            ]
+          },
+          "targetHandle": {
+            "fieldName": "from_date",
+            "id": "Prompt-sum",
+            "inputTypes": [
+              "Message",
+              "Text"
+            ],
+            "type": "str"
+          }
+        },
+        "id": "edge-TextInput-sum-from-text-Prompt-sum-from_date",
+        "animated": false,
+        "className": ""
+      },
+      {
+        "source": "TextInput-sum-to",
+        "sourceHandle": "{\"dataType\": \"TextInput\", \"id\": \"TextInput-sum-to\", \"name\": \"text\", \"output_types\": [\"Message\"]}",
+        "target": "Prompt-sum",
+        "targetHandle": "{\"fieldName\": \"to_date\", \"id\": \"Prompt-sum\", \"inputTypes\": [\"Message\", \"Text\"], \"type\": \"str\"}",
+        "data": {
+          "sourceHandle": {
+            "dataType": "TextInput",
+            "id": "TextInput-sum-to",
+            "name": "text",
+            "output_types": [
+              "Message"
+            ]
+          },
+          "targetHandle": {
+            "fieldName": "to_date",
+            "id": "Prompt-sum",
+            "inputTypes": [
+              "Message",
+              "Text"
+            ],
+            "type": "str"
+          }
+        },
+        "id": "edge-TextInput-sum-to-text-Prompt-sum-to_date",
+        "animated": false,
+        "className": ""
+      },
+      {
+        "source": "Prompt-sum",
+        "sourceHandle": "{\"dataType\": \"Prompt\", \"id\": \"Prompt-sum\", \"name\": \"text\", \"output_types\": [\"Message\"]}",
+        "target": "APIRequest-sum",
+        "targetHandle": "{\"fieldName\": \"urls\", \"id\": \"APIRequest-sum\", \"inputTypes\": [\"Message\"], \"type\": \"str\"}",
+        "data": {
+          "sourceHandle": {
+            "dataType": "Prompt",
+            "id": "Prompt-sum",
+            "name": "text",
+            "output_types": [
+              "Message"
+            ]
+          },
+          "targetHandle": {
+            "fieldName": "urls",
+            "id": "APIRequest-sum",
+            "inputTypes": [
+              "Message"
+            ],
+            "type": "str"
+          }
+        },
+        "id": "edge-Prompt-sum-text-APIRequest-sum-urls",
+        "animated": false,
+        "className": ""
+      },
+      {
+        "source": "APIRequest-sum",
+        "sourceHandle": "{\"dataType\": \"APIRequest\", \"id\": \"APIRequest-sum\", \"name\": \"data\", \"output_types\": [\"Data\"]}",
+        "target": "ParseData-sum",
+        "targetHandle": "{\"fieldName\": \"data\", \"id\": \"ParseData-sum\", \"inputTypes\": [\"Data\"], \"type\": \"Data\"}",
+        "data": {
+          "sourceHandle": {
+            "dataType": "APIRequest",
+            "id": "APIRequest-sum",
+            "name": "data",
+            "output_types": [
+              "Data"
+            ]
+          },
+          "targetHandle": {
+            "fieldName": "data",
+            "id": "ParseData-sum",
+            "inputTypes": [
+              "Data"
+            ],
+            "type": "Data"
+          }
+        },
+        "id": "edge-APIRequest-sum-data-ParseData-sum-data",
+        "animated": false,
+        "className": ""
+      },
+      {
+        "source": "ParseData-sum",
+        "sourceHandle": "{\"dataType\": \"ParseData\", \"id\": \"ParseData-sum\", \"name\": \"text\", \"output_types\": [\"Message\"]}",
+        "target": "ChatOutput-sum",
+        "targetHandle": "{\"fieldName\": \"input_value\", \"id\": \"ChatOutput-sum\", \"inputTypes\": [\"Message\"], \"type\": \"str\"}",
+        "data": {
+          "sourceHandle": {
+            "dataType": "ParseData",
+            "id": "ParseData-sum",
+            "name": "text",
+            "output_types": [
+              "Message"
+            ]
+          },
+          "targetHandle": {
+            "fieldName": "input_value",
+            "id": "ChatOutput-sum",
+            "inputTypes": [
+              "Message"
+            ],
+            "type": "str"
+          }
+        },
+        "id": "edge-ParseData-sum-text-ChatOutput-sum-input_value",
+        "animated": false,
+        "className": ""
+      }
+    ],
+    "viewport": {
+      "x": 60,
+      "y": 40,
+      "zoom": 0.55
+    }
+  },
+  "style": {},
+  "tags": [
+    "financial",
+    "api",
+    "timeseries",
+    "analytics"
+  ],
+  "frozen": false,
+  "folder": null,
+  "icon": null,
+  "icon_bg_color": null,
+  "gradient": null,
+  "metadata": {}
+}
