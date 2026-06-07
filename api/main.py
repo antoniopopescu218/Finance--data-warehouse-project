@@ -4,6 +4,9 @@ from fastapi import FastAPI
 from motor.motor_asyncio import AsyncIOMotorClient
 
 from api.config import settings
+from api.routes.analytics import router as analytics_router
+from api.routes.assets import router as assets_router
+from api.routes.sources import router as sources_router
 from storage.repository import ensure_indexes
 
 
@@ -19,9 +22,13 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title="Financial Markets DWH",
     description="Temporal NoSQL data warehouse for financial market data.",
-    version="0.1.0",
+    version="0.2.0",
     lifespan=lifespan,
 )
+
+app.include_router(sources_router)
+app.include_router(assets_router)
+app.include_router(analytics_router)
 
 
 @app.get("/health", operation_id="health_check", tags=["meta"])
