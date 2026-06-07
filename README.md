@@ -250,4 +250,4 @@ Each Prompt node contains the full URL template. To call a different endpoint (e
 
 ## Security Notice
 
-This project is a development/demo build and is **not hardened for production use**. Notable gaps include: no API authentication, no MongoDB access control, no rate limiting, and no TLS between services. See [`security_readme.md`](security_readme.md) for a full audit with a production hardening checklist.
+This project is a development/demo build and is **not hardened for production use**. Notable gaps include: no API authentication, no MongoDB access control, no rate limiting, and no TLS between services. 
