@@ -1,8 +1,8 @@
 """
 Seed script: inserts data_sources, asset versions, and timeseries from
 yfinance and csv-vendor for 5 symbols. Idempotent: drops and recreates the
-timeseries collection each run; sources use upsert; assets skip if current
-version already exists.
+timeseries collection each run; sources use upsert; assets are refreshed if
+their attributes are stale (e.g. contain stooq instead of csv-vendor).
 """
 import asyncio
 from datetime import datetime, timezone
@@ -53,10 +53,13 @@ async def main() -> None:
     yf_adapter  = YFinanceAdapter()
     csv_adapter = CsvVendorAdapter()
 
-    # 1. Seed data_sources
+    # 1. Seed data_sources; remove any stale stooq source left from earlier runs.
     for adapter in (yf_adapter, csv_adapter):
         await upsert_source(db, adapter.source_record())
         print(f"[source] upserted: {adapter.source_id}")
+    result = await db.data_sources.delete_one({"source_id": "stooq"})
+    if result.deleted_count:
+        print("[source] removed stale stooq source")
 
     totals: dict[str, int] = {}
 
@@ -64,9 +67,13 @@ async def main() -> None:
         symbol = sym_info["symbol"]
         print(f"\n── {symbol} ──")
 
-        # 2. Insert asset version if not already present
+        # 2. Insert or refresh asset version.
+        # A version is stale when attributes has a stooq key or is missing csv-vendor.
         existing = await get_current_asset(db, symbol)
-        if not existing:
+        attrs = (existing or {}).get("attributes", {})
+        stale = existing is None or "stooq" in attrs or "csv-vendor" not in attrs
+
+        if stale:
             yf_attrs  = yf_adapter.fetch_asset_attributes(symbol)
             csv_attrs = csv_adapter.fetch_asset_attributes(symbol)
             await insert_asset_version(db, symbol, {
@@ -79,9 +86,10 @@ async def main() -> None:
                     "csv-vendor": csv_attrs,
                 },
             })
-            print(f"  [asset] inserted new version")
+            action = "inserted" if existing is None else "refreshed (was stale)"
+            print(f"  [asset] {action}")
         else:
-            print(f"  [asset] already exists, skipping")
+            print(f"  [asset] already current, skipping")
 
         # 3. Ingest timeseries from both vendors
         for adapter in (yf_adapter, csv_adapter):
