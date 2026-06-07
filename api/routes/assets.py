@@ -1,10 +1,21 @@
+import csv
+import io
 from datetime import datetime
 
 from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi.responses import StreamingResponse
 from motor.motor_asyncio import AsyncIOMotorDatabase
 from pydantic import BaseModel, ConfigDict
 
-from analytics.metrics import daily_returns, rolling_mean, rolling_std
+from analytics.metrics import (
+    compute_forecast,
+    compute_risk,
+    compute_summary,
+    compute_trend,
+    daily_returns,
+    rolling_mean,
+    rolling_std,
+)
 from api.deps import get_db
 from storage.repository import (
     get_asset_as_of,
@@ -183,3 +194,159 @@ async def get_rolling(
         "dates": [r["data_timestamp"] for r in records],
         "values": values,
     }
+
+
+# ── Phase 3 analytics ─────────────────────────────────────────────────────────
+
+@router.get("/{asset_id}/analytics/summary", operation_id="get_summary")
+async def get_summary(
+    asset_id: str,
+    source_id: str | None = Query(None, description="Filter by data source"),
+    from_: datetime | None = Query(None, alias="from", description="Start of window (inclusive), ISO 8601"),
+    to: datetime | None = Query(None, description="End of window (inclusive), ISO 8601"),
+    db: AsyncIOMotorDatabase = Depends(get_db),
+) -> dict:
+    """Return count, min, max, and average of close prices over a date window.
+
+    Optionally filter by source_id and a from/to date range.
+    """
+    if not await get_current_asset(db, asset_id):
+        raise HTTPException(status_code=404, detail=f"Asset '{asset_id}' not found")
+    records = await query_timeseries(db, asset_id, source_id, from_, to, limit=5000)
+    if not records:
+        raise HTTPException(status_code=404, detail="No timeseries data found for the given filters")
+    closes = [r["close"] for r in records]
+    return {
+        "asset_id": asset_id,
+        "source_id": source_id,
+        "from": from_,
+        "to": to,
+        **compute_summary(closes),
+    }
+
+
+@router.get("/{asset_id}/analytics/trend", operation_id="get_trend")
+async def get_trend(
+    asset_id: str,
+    source_id: str | None = Query(None, description="Filter by data source"),
+    from_: datetime | None = Query(None, alias="from", description="Start of window (inclusive), ISO 8601"),
+    to: datetime | None = Query(None, description="End of window (inclusive), ISO 8601"),
+    window: int = Query(20, ge=2, le=252, description="Moving-average window in trading days"),
+    db: AsyncIOMotorDatabase = Depends(get_db),
+) -> dict:
+    """Return the period percentage change and a per-day list of close price with moving average.
+
+    period_change_pct is (last_close - first_close) / first_close * 100.
+    Each item in data contains date, close, and moving_avg computed over `window` days.
+    """
+    if not await get_current_asset(db, asset_id):
+        raise HTTPException(status_code=404, detail=f"Asset '{asset_id}' not found")
+    records = await query_timeseries(db, asset_id, source_id, from_, to, limit=5000)
+    if not records:
+        raise HTTPException(status_code=404, detail="No timeseries data found for the given filters")
+    closes = [r["close"] for r in records]
+    dates = [r["data_timestamp"] for r in records]
+    return {
+        "asset_id": asset_id,
+        "source_id": source_id,
+        **compute_trend(closes, dates, window),
+    }
+
+
+@router.get("/{asset_id}/analytics/forecast", operation_id="get_forecast")
+async def get_forecast(
+    asset_id: str,
+    source_id: str | None = Query(None, description="Filter by data source"),
+    db: AsyncIOMotorDatabase = Depends(get_db),
+) -> dict:
+    """Return a naive last-close forecast and a linear-regression next-day prediction.
+
+    Both forecasts are labeled so callers can distinguish them.
+    naive_forecast repeats the last observed close price.
+    linear_regression_forecast is an OLS trend extrapolated one period ahead.
+    """
+    if not await get_current_asset(db, asset_id):
+        raise HTTPException(status_code=404, detail=f"Asset '{asset_id}' not found")
+    records = await query_timeseries(db, asset_id, source_id, None, None, limit=5000)
+    if not records:
+        raise HTTPException(status_code=404, detail="No timeseries data found for the given filters")
+    closes = [r["close"] for r in records]
+    return {
+        "asset_id": asset_id,
+        "source_id": source_id,
+        "n_observations": len(closes),
+        **compute_forecast(closes),
+    }
+
+
+@router.get("/{asset_id}/analytics/risk", operation_id="get_risk")
+async def get_risk(
+    asset_id: str,
+    source_id: str | None = Query(None, description="Filter by data source"),
+    from_: datetime | None = Query(None, alias="from", description="Start of window (inclusive), ISO 8601"),
+    to: datetime | None = Query(None, description="End of window (inclusive), ISO 8601"),
+    db: AsyncIOMotorDatabase = Depends(get_db),
+) -> dict:
+    """Return the most-recent 20-day rolling volatility and the maximum drawdown.
+
+    rolling_20d_volatility is the annualisable standard deviation of daily returns
+    over the last 20-day rolling window.
+    max_drawdown is expressed as a negative fraction (e.g. -0.15 means -15%).
+    """
+    if not await get_current_asset(db, asset_id):
+        raise HTTPException(status_code=404, detail=f"Asset '{asset_id}' not found")
+    records = await query_timeseries(db, asset_id, source_id, from_, to, limit=5000)
+    if not records:
+        raise HTTPException(status_code=404, detail="No timeseries data found for the given filters")
+    closes = [r["close"] for r in records]
+    return {
+        "asset_id": asset_id,
+        "source_id": source_id,
+        **compute_risk(closes),
+    }
+
+
+@router.get("/{asset_id}/timeseries/export", operation_id="export_timeseries")
+async def export_timeseries(
+    asset_id: str,
+    source_id: str | None = Query(None, description="Filter by data source"),
+    from_: datetime | None = Query(None, alias="from", description="Start of window (inclusive), ISO 8601"),
+    to: datetime | None = Query(None, description="End of window (inclusive), ISO 8601"),
+    format: str = Query("json", pattern="^(json|csv)$", description="Output format: json or csv"),
+    db: AsyncIOMotorDatabase = Depends(get_db),
+) -> object:
+    """Export flat timeseries records for ML pipelines or Spark ingestion.
+
+    Supports JSON (default) and CSV output. CSV sets Content-Type text/csv
+    and a Content-Disposition attachment header. All numeric fields are included.
+    """
+    if not await get_current_asset(db, asset_id):
+        raise HTTPException(status_code=404, detail=f"Asset '{asset_id}' not found")
+    records = await query_timeseries(db, asset_id, source_id, from_, to, limit=5000)
+    if not records:
+        raise HTTPException(status_code=404, detail="No timeseries data found for the given filters")
+
+    # Normalise datetime objects to ISO strings for serialisation
+    flat = []
+    for r in records:
+        row = {}
+        for k, v in r.items():
+            row[k] = v.isoformat() if isinstance(v, datetime) else v
+        flat.append(row)
+
+    if format == "json":
+        return flat
+
+    # CSV output
+    buf = io.StringIO()
+    fieldnames = list(flat[0].keys())
+    writer = csv.DictWriter(buf, fieldnames=fieldnames, extrasaction="ignore")
+    writer.writeheader()
+    writer.writerows(flat)
+    buf.seek(0)
+    filename = f"{asset_id}_{source_id or 'all'}.csv"
+    return StreamingResponse(
+        iter([buf.getvalue()]),
+        media_type="text/csv",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
